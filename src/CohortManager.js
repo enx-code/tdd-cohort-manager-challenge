@@ -86,6 +86,76 @@ class Cohortmanager {
       return result
     }
   }
+  searchStudent(nameOrId) {
+    const searchedId = this.searchStudentId(nameOrId)
+    const searchedName = this.searchStudentName(nameOrId)
+    if (searchedId !== undefined) {
+      return searchedId
+    }
+    if (searchedName !== undefined) {
+      if (searchedName.length > 1) {
+        return searchedName
+      }
+      return searchedName[0]
+    }
+    throw new Error(`Student ${nameOrId} doesn't exist`)
+  }
+
+  deleteCohort(name) {
+    const cohortToDelete = this.searchCohort(name)
+    const cohortIndex = this.cohortList.indexOf(cohortToDelete)
+    this.cohortList.splice(cohortIndex, 1)
+  }
+
+  addStudent(student, cohortName) {
+    const studentFound = this.searchStudent(student)
+    if (studentFound.length) {
+      throw new Error(`There are many ${student}, try to search by ID`)
+    }
+    const cohort = this.searchCohort(cohortName)
+    if (cohort.studentInside.length >= 24) {
+      throw new Error(
+        `There are too many student inside the ${cohortName} cohort`
+      )
+    }
+    if (this.checkStudent(studentFound)) {
+      cohort.addStudent(studentFound)
+      return `${studentFound.name} is now inside Cohort ${cohort.cohortName}`
+    }
+    throw new Error(`Student already inside other cohort`)
+  }
+
+  checkStudent(student) {
+    const searchedList = []
+    for (let i = 0; i < this.cohortList.length; i++) {
+      const searched = this.cohortList[i].studentInside.filter(
+        (eachStudent) => eachStudent === student
+      )
+      if (searched.length > 0) {
+        searchedList.push(...searched)
+      }
+    }
+    if (searchedList.length < 1) {
+      return true
+    }
+    return false
+  }
+
+  removeStudent(student, cohortName) {
+    const studentFound = this.searchStudent(student)
+    if (studentFound.length) {
+      throw new Error(`There are many ${student}, try to search by ID`)
+    }
+    const cohort = this.searchCohort(cohortName)
+    if (cohort.studentInside.length >= 24) {
+      throw new Error(
+        `There are too many student inside the ${cohortName} cohort`
+      )
+    }
+    cohort.searchStudent(studentFound)
+    cohort.removeStudent(studentFound)
+    return `${studentFound.name} has been removed from Cohort ${cohort.cohortName}`
+  }
 }
 
 module.exports = Cohortmanager
